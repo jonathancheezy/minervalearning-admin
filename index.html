@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minerva Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #7c3aed;
+      --primary-light: #6d28d9;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --dark: #0f172a;
+      --dark-2: #1e293b;
+      --gray-500: #64748b;
+      --gray-400: #94a3b8;
+      --surface: #f1f5f9;
+      --surface-2: #e2e8f0;
+      --white: #ffffff;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--surface);
+      color: var(--dark);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN ── */
+    .login-screen {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+      padding: 20px;
+    }
+    .login-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    .login-logo {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      color: white; font-family: 'Outfit', sans-serif;
+      font-weight: 800; font-size: 1.5rem;
+    }
+    .login-card h1 { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+    .login-card p { color: var(--gray-500); font-size: 0.9rem; margin-bottom: 32px; }
+    .login-form { text-align: left; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.8125rem; font-weight: 600; color: var(--dark-2); margin-bottom: 5px; }
+    .form-group input {
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid var(--surface-2);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.9375rem;
+      outline: none; transition: border-color 0.15s;
+    }
+    .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+    .login-btn {
+      width: 100%; padding: 13px;
+      background: var(--primary); color: white;
+      border: none; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9375rem; font-weight: 600;
+      cursor: pointer; margin-top: 8px;
+      transition: background 0.15s;
+    }
+    .login-btn:hover { background: var(--primary-light); }
+    .login-error { color: var(--danger); font-size: 0.8125rem; margin-top: 10px; text-align: center; display: none; }
+    .login-spinner {
+      display: none; width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 12px auto 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── APP SHELL ── */
+    .app { display: none; }
+    .app.show { display: block; }
+
+    /* Topbar */
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--surface-2);
+      padding: 0 28px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem;
+      color: var(--dark);
+    }
+    .topbar-logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 0.875rem; font-weight: 800;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 14px; }
+    .topbar-user { font-size: 0.875rem; color: var(--gray-500); }
+    .logout-btn {
+      padding: 7px 16px;
+      background: var(--surface); border: none; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600;
+      color: var(--gray-500); cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .logout-btn:hover { background: var(--surface-2); color: var(--dark); }
+
+    /* Layout */
+    .admin-layout { display: flex; }
+    .sidebar {
+      width: 220px;
+      background: var(--white);
+      border-right: 1px solid var(--surface-2);
+      padding: 20px 0;
+      min-height: calc(100vh - 64px);
+      position: sticky; top: 64px;
+      flex-shrink: 0;
+    }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav li { margin-bottom: 2px; }
+    .sidebar-nav button {
+      width: 100%; text-align: left; padding: 10px 20px;
+      background: none; border: none;
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500;
+      color: var(--gray-500); cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sidebar-nav button:hover { color: var(--dark); background: var(--surface); }
+    .sidebar-nav button.active {
+      color: var(--primary); font-weight: 600;
+      border-left-color: var(--primary);
+      background: rgba(124,58,237,0.05);
+    }
+    .sidebar-nav button .badge {
+      margin-left: auto;
+      background: var(--danger); color: white;
+      font-size: 0.6875rem; font-weight: 700;
+      padding: 2px 6px; border-radius: 100px;
+      min-width: 20px; text-align: center;
+    }
+
+    /* Main content */
+    .main-content { flex: 1; padding: 28px; min-width: 0; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+    .stat-card-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 10px; }
+    .stat-card-value { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: var(--dark); line-height: 1; }
+    .stat-card-sub { font-size: 0.75rem; color: var(--gray-500); margin-top: 4px; }
+
+    /* Cards */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--surface-2);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-header h2 { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; }
+    .card-filters { display: flex; gap: 8px; }
+    .filter-btn {
+      padding: 6px 14px;
+      border: 1.5px solid var(--surface-2);
+      border-radius: 100px; background: var(--white);
+      font-family: 'DM Sans', sans-serif; font-size: 0.8125rem; font-weight: 600;
+      color: var(--gray-500); cursor: pointer; transition: all 0.15s;
+    }
+    .filter-btn.active { border-color: var(--primary); background: rgba(124,58,237,0.06); color: var(--primary); }
+    .card-body { padding: 0; }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      text-align: left; padding: 11px 16px;
+      font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--gray-400);
+      border-bottom: 1px solid var(--surface-2);
+      background: var(--surface);
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: 13px 16px;
+      font-size: 0.875rem; color: var(--dark-2);
+      border-bottom: 1px solid var(--surface);
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(124,58,237,0.02); }
+    .data-table .col-type { width: 90px; }
+    .data-table .col-status { width: 100px; }
+    .data-table .col-date { width: 110px; }
+    .data-table .col-action { width: 80px; text-align: right; }
+
+    .type-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 100px;
+      font-size: 0.6875rem; font-weight: 700;
+    }
+    .type-badge.teacher { background: rgba(124,58,237,0.1); color: var(--primary); }
+    .type-badge.parent { background: rgba(16,185,129,0.1); color: var(--success); }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 100px;
+      font-size: 0.6875rem; font-weight: 700;
+    }
+    .status-badge.pending { background: rgba(245,158,11,0.1); color: var(--warning); }
+    .status-badge.approved { background: rgba(16,185,129,0.1); color: var(--success); }
+    .status-badge.rejected { background: rgba(239,68,68,0.1); color: var(--danger); }
+
+    .action-btn {
+      padding: 6px 12px;
+      border: 1.5px solid var(--surface-2);
+      border-radius: 8px; background: var(--white);
+      font-family: 'DM Sans', sans-serif; font-size: 0.8125rem; font-weight: 600;
+      color: var(--gray-500); cursor: pointer; transition: all 0.15s;
+    }
+    .action-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--gray-400);
+    }
+    .empty-state-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state p { font-size: 0.9rem; }
+
+    .loading-row td { text-align: center; padding: 30px; color: var(--gray-400); }
+
+    /* Detail Modal */
+    .modal-overlay {
+      display: none; align-items: center; justify-content: center;
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(15,23,42,0.5);
+      backdrop-filter: blur(6px);
+      padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--white);
+      border-radius: 20px;
+      width: 100%; max-width: 580px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--surface-2);
+      display: flex; align-items: flex-start; justify-content: space-between;
+      position: sticky; top: 0; background: var(--white); z-index: 1;
+    }
+    .modal-header h3 { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; }
+    .modal-header p { font-size: 0.8rem; color: var(--gray-500); margin-top: 2px; }
+    .modal-close {
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: var(--surface); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gray-500); font-size: 1rem; flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .modal-close:hover { background: var(--surface-2); }
+    .modal-body { padding: 22px 24px 26px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; margin-bottom: 20px; }
+    .detail-item label { display: block; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 3px; }
+    .detail-item span { font-size: 0.875rem; color: var(--dark-2); font-weight: 500; }
+    .detail-section-title {
+      font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--primary); margin-bottom: 10px; margin-top: 6px;
+    }
+    .detail-full span { display: block; font-size: 0.875rem; color: var(--dark-2); line-height: 1.5; }
+    .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .detail-tag {
+      padding: 3px 10px; border-radius: 100px;
+      background: var(--surface); color: var(--gray-500);
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .modal-actions { display: flex; gap: 10px; padding-top: 20px; border-top: 1px solid var(--surface-2); margin-top: 4px; }
+    .modal-notes { margin-bottom: 16px; }
+    .modal-notes label { display: block; font-size: 0.8125rem; font-weight: 600; color: var(--dark-2); margin-bottom: 6px; }
+    .modal-notes textarea {
+      width: 100%; padding: 10px 13px;
+      border: 1.5px solid var(--surface-2); border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem;
+      outline: none; resize: vertical; min-height: 72px;
+      transition: border-color 0.15s;
+    }
+    .modal-notes textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+    .btn-approve {
+      flex: 1; padding: 11px;
+      background: var(--success); color: white;
+      border: none; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-approve:hover { background: #0d9668; }
+    .btn-reject {
+      flex: 1; padding: 11px;
+      background: var(--white); color: var(--danger);
+      border: 1.5px solid var(--danger); border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-reject:hover { background: rgba(239,68,68,0.05); }
+    .btn-save-note {
+      padding: 11px 16px;
+      background: var(--primary); color: white;
+      border: none; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-save-note:hover { background: var(--primary-light); }
+
+    /* Tab bar */
+    .tab-bar {
+      display: flex; gap: 4px;
+      background: var(--surface);
+      padding: 4px; border-radius: 12px;
+      margin-bottom: 20px;
+      width: fit-content;
+    }
+    .tab-btn {
+      padding: 8px 20px;
+      border: none; border-radius: 9px;
+      background: none;
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600;
+      color: var(--gray-500); cursor: pointer; transition: all 0.15s;
+    }
+    .tab-btn.active { background: var(--white); color: var(--dark); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+    /* Section title */
+    .section-title { font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; margin-bottom: 20px; color: var(--dark); }
+
+    /* Chart placeholder */
+    .chart-area {
+      background: var(--white); border-radius: var(--radius);
+      padding: 22px; box-shadow: var(--shadow);
+      margin-bottom: 28px;
+    }
+    .chart-title { font-size: 0.875rem; font-weight: 700; margin-bottom: 16px; color: var(--dark); }
+    .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+    .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .chart-bar {
+      width: 100%; border-radius: 6px 6px 0 0;
+      background: linear-gradient(180deg, #7c3aed, #a78bfa);
+      transition: height 0.3s;
+      min-height: 4px;
+    }
+    .chart-bar-label { font-size: 0.6875rem; color: var(--gray-400); font-weight: 600; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .modal { margin: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">M</div>
+    <h1>Minerva Admin</h1>
+    <p>Sign in to manage submissions</p>
+    <div class="login-form">
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" id="loginEmail" placeholder="admin@minerva.ai" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button class="login-btn" id="loginBtn" onclick="handleLogin()">Sign in</button>
+      <div class="login-spinner" id="loginSpinner"></div>
+      <div class="login-error" id="loginError"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div class="app" id="app">
+
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="topbar-logo-icon">M</div>
+      Minerva Admin
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="userEmail"></span>
+      <button class="logout-btn" onclick="handleLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><button class="active" onclick="showSection('dashboard')" id="nav-dashboard">
+          📊 Dashboard
+        </button></li>
+        <li><button onclick="showSection('submissions')" id="nav-submissions">
+          📋 Submissions <span class="badge" id="pendingBadge" style="display:none">0</span>
+        </button></li>
+        <li><button onclick="showSection('teachers')" id="nav-teachers">
+          👨‍🏫 Teachers
+        </button></li>
+        <li><button onclick="showSection('parents')" id="nav-parents">
+          👨‍👩‍👧 Parents
+        </button></li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+
+      <!-- DASHBOARD -->
+      <div id="section-dashboard">
+        <h1 class="section-title">Dashboard</h1>
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-card-label">Total submissions</div>
+            <div class="stat-card-value" id="stat-total">—</div>
+            <div class="stat-card-sub">all time</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Parents / Students</div>
+            <div class="stat-card-value" id="stat-parents">—</div>
+            <div class="stat-card-sub">registered</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Teachers</div>
+            <div class="stat-card-value" id="stat-teachers">—</div>
+            <div class="stat-card-sub">registered</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Pending review</div>
+            <div class="stat-card-value" id="stat-pending">—</div>
+            <div class="stat-card-sub">awaiting approval</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Approved</div>
+            <div class="stat-card-value" id="stat-approved">—</div>
+            <div class="stat-card-sub">teachers approved</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Approval rate</div>
+            <div class="stat-card-value" id="stat-rate">—</div>
+            <div class="stat-card-sub">of reviewed</div>
+          </div>
+        </div>
+
+        <div class="chart-area">
+          <div class="chart-title">Submissions this week</div>
+          <div class="chart-bars" id="weeklyChart"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Recent submissions</h2>
+            <button class="action-btn" onclick="showSection('submissions')">View all →</button>
+          </div>
+          <div class="card-body">
+            <table class="data-table" id="recentTable">
+              <thead>
+                <tr>
+                  <th>Date</th><th>Name</th><th>Type</th><th>Status</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="recentTableBody"><tr class="loading-row"><td colspan="5">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBMISSIONS -->
+      <div id="section-submissions" style="display:none">
+        <h1 class="section-title">All submissions</h1>
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="filterSubmissions('all')">All</button>
+          <button class="tab-btn" onclick="filterSubmissions('teacher')">Teachers</button>
+          <button class="tab-btn" onclick="filterSubmissions('parent')">Parents</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th><th>Name</th><th>Email</th><th class="col-type">Type</th><th class="col-status">Status</th><th class="col-action"></th>
+                </tr>
+              </thead>
+              <tbody id="submissionsTableBody"><tr class="loading-row"><td colspan="6">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEACHERS -->
+      <div id="section-teachers" style="display:none">
+        <h1 class="section-title">Teachers</h1>
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="filterTeachers('all')">All</button>
+          <button class="tab-btn" onclick="filterTeachers('pending')">Pending</button>
+          <button class="tab-btn" onclick="filterTeachers('approved')">Approved</button>
+          <button class="tab-btn" onclick="filterTeachers('rejected')">Rejected</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th><th>Name</th><th>Email</th><th>Subjects</th><th class="col-status">Status</th><th class="col-action"></th>
+                </tr>
+              </thead>
+              <tbody id="teachersTableBody"><tr class="loading-row"><td colspan="6">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARENTS -->
+      <div id="section-parents" style="display:none">
+        <h1 class="section-title">Parents & Students</h1>
+        <div class="card">
+          <div class="card-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th><th>Name</th><th>Email</th><th>Student level</th><th>Subjects</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="parentsTableBody"><tr class="loading-row"><td colspan="6">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3 id="modalTitle">Submission details</h3>
+        <p id="modalSubtitle"></p>
+      </div>
+      <button class="modal-close" onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="modalDetailGrid"></div>
+      <div id="modalExtraSection"></div>
+      <div class="modal-notes" id="modalNotesSection">
+        <label>Admin notes</label>
+        <textarea id="adminNotes" placeholder="Add internal notes about this submission..."></textarea>
+      </div>
+      <div class="modal-actions" id="modalActions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+  // ── Firebase Config ──
+  const firebaseConfig = {
+    apiKey: "AIzaSyA50vtTGq5RNPAalle6CafSLP2Pq4dPbCE",
+    authDomain: "minerva-learning-a7eac.firebaseapp.com",
+    projectId: "minerva-learning-a7eac",
+    storageBucket: "minerva-learning-a7eac.firebasestorage.app",
+    messagingSenderId: "140471258134",
+    appId: "1:140471258134:web:722fb03d6c3748d2a4b937"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+
+  // ── State ──
+  let allSubmissions = [];
+  let currentFilter = 'all';
+  let currentTeacherFilter = 'all';
+  let selectedDoc = null;
+
+  // ── Auth ──
+  auth.onAuthStateChanged(function(user) {
+    if (user) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').classList.add('show');
+      document.getElementById('userEmail').textContent = user.email;
+      loadSubmissions();
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('app').classList.remove('show');
+    }
+  });
+
+  function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const btn = document.getElementById('loginBtn');
+    const spinner = document.getElementById('loginSpinner');
+    const error = document.getElementById('loginError');
+
+    if (!email || !password) { error.textContent = 'Please enter email and password.'; error.style.display = 'block'; return; }
+
+    btn.style.display = 'none';
+    spinner.style.display = 'block';
+    error.style.display = 'none';
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(function() { spinner.style.display = 'none'; btn.style.display = 'block'; })
+      .catch(function(err) {
+        spinner.style.display = 'none'; btn.style.display = 'block';
+        error.textContent = err.message;
+        error.style.display = 'block';
+      });
+  }
+
+  function handleLogout() {
+    auth.signOut();
+  }
+
+  // Enter key on password field
+  document.getElementById('loginPassword').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  // ── Load Data ──
+  function loadSubmissions() {
+    db.collection('submissions').orderBy('submittedAt', 'desc').get().then(function(snap) {
+      allSubmissions = [];
+      snap.forEach(function(doc) {
+        allSubmissions.push({ id: doc.id, ...doc.data() });
+      });
+      renderAll();
+      updateBadge();
+    }).catch(function(err) {
+      console.error('Firestore error:', err);
+    });
+  }
+
+  // ── Render ──
+  function renderAll() {
+    renderStats();
+    renderRecent();
+    renderSubmissions();
+    renderTeachers();
+    renderParents();
+    renderWeeklyChart();
+  }
+
+  function renderStats() {
+    const total = allSubmissions.length;
+    const parents = allSubmissions.filter(function(s) { return s.userType === 'parent'; });
+    const teachers = allSubmissions.filter(function(s) { return s.userType === 'teacher'; });
+    const pending = teachers.filter(function(s) { return !s.status || s.status === 'pending'; });
+    const approved = teachers.filter(function(s) { return s.status === 'approved'; });
+    const reviewed = teachers.filter(function(s) { return s.status === 'approved' || s.status === 'rejected'; });
+    const rate = reviewed.length > 0 ? Math.round((approved.length / reviewed.length) * 100) + '%' : '—';
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-parents').textContent = parents.length;
+    document.getElementById('stat-teachers').textContent = teachers.length;
+    document.getElementById('stat-pending').textContent = pending.length;
+    document.getElementById('stat-approved').textContent = approved.length;
+    document.getElementById('stat-rate').textContent = rate;
+  }
+
+  function renderWeeklyChart() {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const now = new Date();
+    var dayCounts = [0, 0, 0, 0, 0, 0, 0];
+
+    allSubmissions.forEach(function(s) {
+      if (!s.submittedAt) return;
+      var d = new Date(s.submittedAt.seconds ? s.submittedAt.seconds * 1000 : s.submittedAt);
+      var diff = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+      if (diff < 7) {
+        var dayIdx = (d.getDay() + 6) % 7; // Mon=0
+        if (dayIdx >= 0 && dayIdx < 7) dayCounts[dayIdx]++;
+      }
+    });
+
+    var max = Math.max.apply(null, dayCounts.concat([1]));
+    var html = days.map(function(day, i) {
+      var height = Math.round((dayCounts[i] / max) * 100) || 4;
+      return '<div class="chart-bar-wrap"><div class="chart-bar" style="height:' + height + 'px"></div><div class="chart-bar-label">' + day + '</div></div>';
+    }).join('');
+    document.getElementById('weeklyChart').innerHTML = html;
+  }
+
+  function renderRecent() {
+    var rows = allSubmissions.slice(0, 8);
+    if (rows.length === 0) {
+      document.getElementById('recentTableBody').innerHTML = '<tr><td colspan="5" class="empty-state"><div class="empty-state-icon">📭</div><p>No submissions yet</p></td></tr>';
+      return;
+    }
+    document.getElementById('recentTableBody').innerHTML = rows.map(function(s) { return buildRow(s); }).join('');
+  }
+
+  function renderSubmissions() {
+    var filtered = currentFilter === 'all' ? allSubmissions : allSubmissions.filter(function(s) { return s.userType === currentFilter; });
+    if (filtered.length === 0) {
+      document.getElementById('submissionsTableBody').innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-state-icon">📭</div><p>No submissions yet</p></td></tr>';
+      return;
+    }
+    document.getElementById('submissionsTableBody').innerHTML = filtered.map(function(s) { return buildRow(s); }).join('');
+  }
+
+  function renderTeachers() {
+    var teachers = allSubmissions.filter(function(s) { return s.userType === 'teacher'; });
+    if (currentTeacherFilter !== 'all') {
+      teachers = teachers.filter(function(s) { return s.status === currentTeacherFilter; });
+    }
+    if (teachers.length === 0) {
+      document.getElementById('teachersTableBody').innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-state-icon">📭</div><p>No teachers found</p></td></tr>';
+      return;
+    }
+    document.getElementById('teachersTableBody').innerHTML = teachers.map(function(s) { return buildTeacherRow(s); }).join('');
+  }
+
+  function renderParents() {
+    var parents = allSubmissions.filter(function(s) { return s.userType === 'parent'; });
+    if (parents.length === 0) {
+      document.getElementById('parentsTableBody').innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-state-icon">📭</div><p>No parent submissions yet</p></td></tr>';
+      return;
+    }
+    document.getElementById('parentsTableBody').innerHTML = parents.map(function(s) { return buildParentRow(s); }).join('');
+  }
+
+  function buildRow(s) {
+    var date = formatDate(s.submittedAt);
+    var name = escHtml((s.firstName || '') + ' ' + (s.lastName || '')).trim() || '—';
+    var email = escHtml(s.email || '');
+    var typeClass = s.userType || 'parent';
+    var typeLabel = s.userType === 'teacher' ? 'Teacher' : 'Parent';
+    var statusClass = s.status || 'pending';
+    var statusLabel = statusClass.charAt(0).toUpperCase() + statusClass.slice(1);
+    var isTeacher = s.userType === 'teacher';
+    return '<tr>' +
+      '<td>' + date + '</td>' +
+      '<td><strong>' + name + '</strong></td>' +
+      '<td>' + email + '</td>' +
+      '<td><span class="type-badge ' + typeClass + '">' + typeLabel + '</span></td>' +
+      '<td><span class="status-badge ' + statusClass + '">' + statusLabel + '</span></td>' +
+      '<td class="col-action"><button class="action-btn" onclick="openDetail(\'' + s.id + '\')">View</button></td>' +
+    '</tr>';
+  }
+
+  function buildTeacherRow(s) {
+    var date = formatDate(s.submittedAt);
+    var name = escHtml((s.firstName || '') + ' ' + (s.lastName || '')).trim() || '—';
+    var email = escHtml(s.email || '');
+    var subjects = s.subjects ? s.subjects.slice(0, 3).join(', ') + (s.subjects.length > 3 ? ' +' + (s.subjects.length - 3) : '') : '—';
+    var statusClass = s.status || 'pending';
+    var statusLabel = statusClass.charAt(0).toUpperCase() + statusClass.slice(1);
+    return '<tr>' +
+      '<td>' + date + '</td>' +
+      '<td><strong>' + name + '</strong></td>' +
+      '<td>' + email + '</td>' +
+      '<td>' + escHtml(subjects) + '</td>' +
+      '<td><span class="status-badge ' + statusClass + '">' + statusLabel + '</span></td>' +
+      '<td class="col-action"><button class="action-btn" onclick="openDetail(\'' + s.id + '\')">Review</button></td>' +
+    '</tr>';
+  }
+
+  function buildParentRow(s) {
+    var date = formatDate(s.submittedAt);
+    var name = escHtml((s.firstName || '') + ' ' + (s.lastName || '')).trim() || '—';
+    var email = escHtml(s.email || '');
+    var level = s.level || '—';
+    var subjects = s.subjects ? s.subjects.slice(0, 2).join(', ') + (s.subjects.length > 2 ? ' +' + (s.subjects.length - 2) : '') : '—';
+    return '<tr>' +
+      '<td>' + date + '</td>' +
+      '<td><strong>' + name + '</strong></td>' +
+      '<td>' + email + '</td>' +
+      '<td>' + escHtml(level) + '</td>' +
+      '<td>' + escHtml(subjects) + '</td>' +
+      '<td class="col-action"><button class="action-btn" onclick="openDetail(\'' + s.id + '\')">View</button></td>' +
+    '</tr>';
+  }
+
+  // ── Detail Modal ──
+  function openDetail(id) {
+    selectedDoc = allSubmissions.find(function(s) { return s.id === id; });
+    if (!selectedDoc) return;
+    var s = selectedDoc;
+
+    var isTeacher = s.userType === 'teacher';
+    document.getElementById('modalTitle').textContent = escHtml(((s.firstName || '') + ' ' + (s.lastName || '')).trim());
+    document.getElementById('modalSubtitle').textContent = (isTeacher ? 'Teacher' : 'Parent / Student') + ' · ' + escHtml(s.email || '');
+    document.getElementById('adminNotes').value = s.adminNotes || '';
+
+    // Base fields
+    var grid = [
+      '<div class="detail-item"><label>Email</label><span>' + escHtml(s.email || '—') + '</span></div>',
+      '<div class="detail-item"><label>WhatsApp</label><span>' + escHtml(s.whatsapp || '—') + '</span></div>',
+      '<div class="detail-item"><label>Submitted</label><span>' + formatDate(s.submittedAt) + '</span></div>',
+      '<div class="detail-item"><label>Status</label><span class="status-badge ' + (s.status || 'pending') + '">' + ((s.status || 'pending').charAt(0).toUpperCase() + (s.status || 'pending').slice(1)) + '</span></div>'
+    ];
+    document.getElementById('modalDetailGrid').innerHTML = grid.join('');
+
+    // Extra details
+    var extraHtml = '<div class="detail-section-title">' + (isTeacher ? 'Teaching details' : 'Student details') + '</div>';
+
+    if (isTeacher) {
+      extraHtml +=
+        '<div class="detail-grid">' +
+        '<div class="detail-item"><label>Experience</label><span>' + escHtml(s.experience || '—') + '</span></div>' +
+        '<div class="detail-item"><label>Level</label><span>' + (s.level ? s.level.join(', ') : '—') + '</span></div>' +
+        '</div>' +
+        '<div class="detail-full"><label>Subjects</label><div class="detail-tags">' +
+        (s.subjects && s.subjects.length ? s.subjects.map(function(sub) { return '<span class="detail-tag">' + escHtml(sub) + '</span>'; }).join('') : '<span>—</span>') +
+        '</div></div>';
+    } else {
+      extraHtml +=
+        '<div class="detail-grid">' +
+        '<div class="detail-item"><label>Student level</label><span>' + escHtml(s.level || '—') + '</span></div>' +
+        '</div>' +
+        '<div class="detail-full"><label>Subjects needed</label><div class="detail-tags">' +
+        (s.subjects && s.subjects.length ? s.subjects.map(function(sub) { return '<span class="detail-tag">' + escHtml(sub) + '</span>'; }).join('') : '<span>—</span>') +
+        '</div></div>';
+    }
+
+    // Other fields from detailed reg form
+    if (s.regData) {
+      extraHtml += '<div class="detail-section-title">Extended details</div><div class="detail-grid">';
+      var rd = s.regData;
+      if (rd.studentFirst) extraHtml += '<div class="detail-item"><label>Student name</label><span>' + escHtml(rd.studentFirst + ' ' + (rd.studentLast || '')) + '</span></div>';
+      if (rd.level) extraHtml += '<div class="detail-item"><label>Year / Form</label><span>' + escHtml(rd.level) + '</span></div>';
+      if (rd.schoolType) extraHtml += '<div class="detail-item"><label>School type</label><span>' + escHtml(rd.schoolType) + '</span></div>';
+      if (rd.district) extraHtml += '<div class="detail-item"><label>District</label><span>' + escHtml(rd.district) + '</span></div>';
+      if (rd.mode) extraHtml += '<div class="detail-item"><label>Mode</label><span>' + escHtml(rd.mode) + '</span></div>';
+      if (rd.lessonsPerWeek) extraHtml += '<div class="detail-item"><label>Sessions/week</label><span>' + escHtml(rd.lessonsPerWeek) + '</span></div>';
+      if (rd.sessionLength) extraHtml += '<div class="detail-item"><label>Session length</label><span>' + escHtml(rd.sessionLength) + '</span></div>';
+      if (rd.days) extraHtml += '<div class="detail-item"><label>Preferred days</label><span>' + escHtml(rd.days) + '</span></div>';
+      if (rd.timeSlot) extraHtml += '<div class="detail-item"><label>Time slot</label><span>' + escHtml(rd.timeSlot) + '</span></div>';
+      if (rd.budget) extraHtml += '<div class="detail-item"><label>Budget</label><span>' + escHtml(rd.budget) + '</span></div>';
+      if (rd.currentLevel) extraHtml += '<div class="detail-item"><label>Student level</label><span>' + escHtml(rd.currentLevel) + '</span></div>';
+      if (rd.goals) extraHtml += '<div class="detail-full"><label>Goals / Requirements</label><span>' + escHtml(rd.goals) + '</span></div>';
+      if (rd.qualification) extraHtml += '<div class="detail-item"><label>Qualification</label><span>' + escHtml(rd.qualification) + '</span></div>';
+      if (rd.institution) extraHtml += '<div class="detail-item"><label>Institution</label><span>' + escHtml(rd.institution) + '</span></div>';
+      if (rd.experience) extraHtml += '<div class="detail-item"><label>Experience</label><span>' + escHtml(rd.experience) + '</span></div>';
+      if (rd.levels) extraHtml += '<div class="detail-item"><label>Can teach</label><span>' + escHtml(rd.levels) + '</span></div>';
+      if (rd.bio) extraHtml += '<div class="detail-full"><label>Bio</label><span>' + escHtml(rd.bio) + '</span></div>';
+      if (rd.district) extraHtml += '<div class="detail-item"><label>Travel districts</label><span>' + escHtml(rd.district) + '</span></div>';
+      if (rd.rate) extraHtml += '<div class="detail-item"><label>Hourly rate</label><span>' + escHtml(rd.rate) + '</span></div>';
+      extraHtml += '</div>';
+    }
+
+    document.getElementById('modalExtraSection').innerHTML = extraHtml;
+
+    // Actions
+    if (isTeacher) {
+      document.getElementById('modalActions').innerHTML =
+        '<button class="btn-reject" onclick="rejectTeacher()">Reject</button>' +
+        '<button class="btn-approve" onclick="approveTeacher()">Approve</button>';
+      document.getElementById('modalNotesSection').style.display = 'block';
+    } else {
+      document.getElementById('modalActions').innerHTML =
+        '<button class="btn-save-note" onclick="saveNote()" style="width:100%">Save note</button>';
+      document.getElementById('modalNotesSection').style.display = 'block';
+    }
+
+    document.getElementById('detailModal').classList.add('show');
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detailModal').classList.remove('show');
+    selectedDoc = null;
+  }
+
+  function approveTeacher() {
+    if (!selectedDoc) return;
+    saveNote();
+    db.collection('submissions').doc(selectedDoc.id).update({
+      status: 'approved',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function() {
+      selectedDoc.status = 'approved';
+      renderAll();
+      closeDetailModal();
+    });
+  }
+
+  function rejectTeacher() {
+    if (!selectedDoc) return;
+    saveNote();
+    db.collection('submissions').doc(selectedDoc.id).update({
+      status: 'rejected',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function() {
+      selectedDoc.status = 'rejected';
+      renderAll();
+      closeDetailModal();
+    });
+  }
+
+  function saveNote() {
+    if (!selectedDoc) return;
+    var note = document.getElementById('adminNotes').value;
+    db.collection('submissions').doc(selectedDoc.id).update({
+      adminNotes: note,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function() {
+      selectedDoc.adminNotes = note;
+    });
+  }
+
+  // ── Nav ──
+  function showSection(name) {
+    ['dashboard','submissions','teachers','parents'].forEach(function(s) {
+      document.getElementById('section-' + s).style.display = 'none';
+      document.getElementById('nav-' + s).classList.remove('active');
+    });
+    document.getElementById('section-' + name).style.display = 'block';
+    document.getElementById('nav-' + name).classList.add('active');
+  }
+
+  function filterSubmissions(type) {
+    currentFilter = type;
+    document.querySelectorAll('#section-submissions .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    event.target.classList.add('active');
+    renderSubmissions();
+  }
+
+  function filterTeachers(status) {
+    currentTeacherFilter = status;
+    document.querySelectorAll('#section-teachers .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    event.target.classList.add('active');
+    renderTeachers();
+  }
+
+  function updateBadge() {
+    var pending = allSubmissions.filter(function(s) { return s.userType === 'teacher' && (!s.status || s.status === 'pending'); });
+    var badge = document.getElementById('pendingBadge');
+    if (pending.length > 0) {
+      badge.textContent = pending.length;
+      badge.style.display = 'inline';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // ── Helpers ──
+  function formatDate(ts) {
+    if (!ts) return '—';
+    var d = new Date(ts.seconds ? ts.seconds * 1000 : ts);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Close modal on backdrop click
+  document.getElementById('detailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDetailModal();
+  });
+</script>
+</body>
+</html>
