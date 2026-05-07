@@ -1,4 +1,4 @@
-name: Sync from Minerva and Deploy
+name: Sync from Minerva
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  sync-and-deploy:
+  sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Minerva
@@ -23,38 +23,8 @@ jobs:
           cp minerva/parent_registration.html .
           cp minerva/admin_dashboard.html .
           cp minerva/i18n.js .
-          ls -la
-
-      - name: Deploy via Cloudflare API
-        run: |
-          ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
-          API_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
-          
-          # Get upload URL
-          echo "Getting upload URL..."
-          RESP=$(curl -s -X POST             "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/minervalearning-admin/deployments"             -H "Authorization: Bearer ${API_TOKEN}"             -H "Content-Type: application/json")
-          
-          echo "Response: $RESP"
-          
-          UPLOAD_URL=$(echo "$RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('result',{}).get('upload_url',''))" 2>/dev/null)
-          DEPLOYMENT_ID=$(echo "$RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('result',{}).get('id',''))" 2>/dev/null)
-          
-          echo "Upload URL: $UPLOAD_URL"
-          echo "Deployment ID: $DEPLOYMENT_ID"
-          
-          if [ -z "$UPLOAD_URL" ]; then
-            echo "Failed to get upload URL - $RESP"
-            exit 1
-          fi
-          
-          # Upload files
-          for FILE in parent_registration.html admin_dashboard.html i18n.js; do
-            echo "Uploading $FILE..."
-            MTIME=$(python3 -c "import os; print(int(os.path.getmtime('$FILE')))")
-            curl -s -X PUT "${UPLOAD_URL}/${FILE}"               -H "Content-Type: $([ "$FILE" = "i18n.js" ] && echo "application/javascript" || echo "text/html")"               -H "x-amz-meta-mtime: ${MTIME}"               --data-binary "@${FILE}" || echo "Upload failed for $FILE"
-          done
-          
-          # Complete deployment
-          echo "Completing deployment..."
-          COMPLETE_RESP=$(curl -s -X POST             "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/minervalearning-admin/deployments/${DEPLOYMENT_ID}/complete"             -H "Authorization: Bearer ${API_TOKEN}"             -H "Content-Type: application/json"             -d '{}')
-          echo "Complete: $COMPLETE_RESP"
+          git config user.email "poseidon@openclaw.ai"
+          git config user.name "Poseidon"
+          git add parent_registration.html admin_dashboard.html i18n.js
+          git commit -m "Sync from Minerva main - $(date)"
+          git push origin master
