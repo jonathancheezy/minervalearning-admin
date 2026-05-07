@@ -1,0 +1,34 @@
+name: Sync from Minerva and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Minerva
+        uses: actions/checkout@v4
+        with:
+          repository: jonathancheezy/Minerva
+          ref: main
+          path: minerva
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Copy files to root
+        run: |
+          cp minerva/parent_registration.html .
+          cp minerva/admin_dashboard.html .
+          cp minerva/i18n.js .
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: minervalearning-admin
+          directory: .
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
