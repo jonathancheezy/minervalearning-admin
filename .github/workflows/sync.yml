@@ -10,6 +10,12 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
       - name: Checkout Minerva
         uses: actions/checkout@v4
         with:
@@ -26,5 +32,4 @@ jobs:
           git config user.email "poseidon@openclaw.ai"
           git config user.name "Poseidon"
           git add parent_registration.html admin_dashboard.html i18n.js
-          git commit -m "Sync from Minerva main - $(date)"
-          git push origin master
+          git commit -m "Sync from Minerva main - $(date)" && git push origin master || echo "Nothing to push"
