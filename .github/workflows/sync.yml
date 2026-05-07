@@ -18,7 +18,7 @@ jobs:
           path: minerva
           token: ${{ secrets.GH_PAT }}
 
-      - name: Copy files
+      - name: Copy files and push
         run: |
           cp minerva/parent_registration.html .
           cp minerva/admin_dashboard.html .
